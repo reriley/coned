@@ -35,7 +35,7 @@ class Meter(object):
     DATA_SITE_CONED = 'cned'
     SITE_ORU = 'oru'
     DATA_SITE_ORU = 'oru'
-    SLEEP = 60000
+    TIMEOUT = 120000
 
     def __init__(self, email, password, mfa_type, mfa_secret, account_uuid, meter_number, site='coned', loop=None, browser_path=None):
         """Return a meter object whose meter id is *meter_number*"""
@@ -125,6 +125,7 @@ class Meter(object):
 
         browser = await launch(browser_launch_config)
         page = await browser.newPage()
+        await page.setDefaultNavigationTimeout(self.TIMEOUT);
 
         await page.goto('https://www.' + self.site + '.com/en/login')
         sleep = 8000
@@ -137,7 +138,7 @@ class Meter(object):
         await page.click("#form-login-remember-me")
         await page.click(".submit-button")
         # Wait for login to authenticate
-        sleep = self.SLEEP
+        sleep = 30000
         _LOGGER.debug("Waiting for = %s millis", sleep)
         await page.waitFor(sleep)
         await page.screenshot({'path': 'meter1.png'})
@@ -152,13 +153,14 @@ class Meter(object):
         await page.click(".js-login-new-device-form .button")
         # Wait for authentication to complete
         # await page.waitForNavigation()
-        sleep = self.SLEEP
+        sleep = 30000
         _LOGGER.debug("Waiting for = %s millis", sleep)
         await page.waitFor(sleep)
         await page.screenshot({'path': 'meter3.png'})
 
         # Access the API using your newly acquired authentication cookies!
         api_page = await browser.newPage()
+        await api_page.setDefaultNavigationTimeout(self.TIMEOUT);
         api_url = 'https://' + self.data_site + '.opower.com/ei/edge/apis/cws-real-time-ami-v1/cws/' + self.data_site + '/accounts/' + self.account_uuid + '/meters/' + self.meter_number + '/usage'
         await api_page.goto(api_url)
         await api_page.screenshot({'path': 'meter4.png'})
