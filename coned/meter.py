@@ -125,13 +125,13 @@ class Meter(object):
 
         browser = await launch(browser_launch_config)
         page = await browser.newPage()
-        await page.setDefaultNavigationTimeout(self.TIMEOUT);
+        page.setDefaultNavigationTimeout(self.TIMEOUT)
 
         await page.goto('https://www.' + self.site + '.com/en/login')
         sleep = 8000
         _LOGGER.debug("Waiting for = %s millis", sleep)
         await page.waitFor(sleep)
-        await page.screenshot({'path': 'meter0.png'})
+        # await page.screenshot({'path': 'meter0.png'})
 
         await page.type("#form-login-email", self.email)
         await page.type("#form-login-password", self.password)
@@ -141,7 +141,7 @@ class Meter(object):
         sleep = 30000
         _LOGGER.debug("Waiting for = %s millis", sleep)
         await page.waitFor(sleep)
-        await page.screenshot({'path': 'meter1.png'})
+        # await page.screenshot({'path': 'meter1.png'})
 
         # Enter in 2 factor auth code (see README for details)
         mfa_code = self.mfa_secret
@@ -149,22 +149,21 @@ class Meter(object):
             mfa_code = pyotp.TOTP(self.mfa_secret).now()
         #_LOGGER.debug("mfa_code = %s", mfa_code)
         await page.type("#form-login-mfa-code", mfa_code)
-        await page.screenshot({'path': 'meter2.png'})
+        # await page.screenshot({'path': 'meter2.png'})
         await page.click(".js-login-new-device-form .button")
         # Wait for authentication to complete
         # await page.waitForNavigation()
         sleep = 30000
         _LOGGER.debug("Waiting for = %s millis", sleep)
         await page.waitFor(sleep)
-        await page.screenshot({'path': 'meter3.png'})
+        # await page.screenshot({'path': 'meter3.png'})
 
         # Access the API using your newly acquired authentication cookies!
         api_page = await browser.newPage()
-        await api_page.setDefaultNavigationTimeout(self.TIMEOUT);
+        api_page.setDefaultNavigationTimeout(self.TIMEOUT)
         api_url = 'https://' + self.data_site + '.opower.com/ei/edge/apis/cws-real-time-ami-v1/cws/' + self.data_site + '/accounts/' + self.account_uuid + '/meters/' + self.meter_number + '/usage'
         await api_page.goto(api_url)
-        await api_page.screenshot({'path': 'meter4.png'})
-
+        # await api_page.screenshot({'path': 'meter4.png'})
         data_elem = await api_page.querySelector('pre')
         self.raw_data = await api_page.evaluate('(el) => el.textContent', data_elem)
         _LOGGER.debug(self.raw_data)
